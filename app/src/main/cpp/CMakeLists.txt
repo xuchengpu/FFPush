@@ -11,9 +11,12 @@ project("ffpush")
 add_subdirectory(librtmp)
 # Declares and names the project.
 #导入头文件的路径 自动查看头文件 <>
-include_directories(librtmp)
+include_directories(librtmp libx264/include)
 # 只要有一个C++文件，就是属于C++ == CXX CMAKE_CXX_FLAGS
-set(CMAKE_CXX_FLAGS)
+#set(CMAKE_CXX_FLAGS)
+
+# 设置x264库路径
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -L${CMAKE_SOURCE_DIR}/libx264/lib/${CMAKE_ANDROID_ARCH_ABI}")
 
 # Creates and names a library, sets it as either STATIC
 # or SHARED, and provides the relative paths to its source code.
@@ -49,6 +52,7 @@ find_library( # Sets the name of the path variable.
 target_link_libraries( # Specifies the target library.
         ffpush
         rtmp
+        x264
         # Links the target library to the log library
         # included in the NDK.
         ${log-lib}
