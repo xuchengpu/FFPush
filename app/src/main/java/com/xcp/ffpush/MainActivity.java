@@ -15,7 +15,7 @@ import com.xcp.ffpush.databinding.ActivityMainBinding;
 public class MainActivity extends AppCompatActivity {
     private final String TAG = getClass().getSimpleName();
     private ActivityMainBinding mbinding;
-    private CameraHelper cameraHelper;
+    private FFPusher pusher;
     private RxPermissions rxPermissions;
 
     static {
@@ -29,8 +29,9 @@ public class MainActivity extends AppCompatActivity {
         Log.e(TAG, "version=" + stringFromJni());
 
 
-        cameraHelper = new CameraHelper(this, Camera.CameraInfo.CAMERA_FACING_BACK, 640, 480);
-        cameraHelper.setPreviewDisplay(mbinding.surfaceView.getHolder());
+        // 前置摄像头，宽，高，fps(每秒25帧)，码率/比特率：https://blog.51cto.com/u_7335580/2058648
+        pusher = new FFPusher(this, Camera.CameraInfo.CAMERA_FACING_FRONT, 640, 480, 25, 800000);
+        pusher.setPreviewDisplay(mbinding.surfaceView.getHolder());
 
         rxPermissions = new RxPermissions(this);
         rxPermissions
@@ -39,7 +40,7 @@ public class MainActivity extends AppCompatActivity {
                         Manifest.permission.WRITE_EXTERNAL_STORAGE)
                 .subscribe(granted -> {
                     if (granted) {
-                        cameraHelper.switchCamera();
+                        switchCamera(null);
                     }
                 });
 
@@ -52,7 +53,7 @@ public class MainActivity extends AppCompatActivity {
      * @param view
      */
     public void switchCamera(View view) {
-        cameraHelper.switchCamera();
+        pusher.switchCamera();
     }
 
     /**
@@ -60,6 +61,7 @@ public class MainActivity extends AppCompatActivity {
      * @param view
      */
     public void startLive(View view) {
+        pusher.startLive("rtmp://139.224.136.101/myapp");
     }
 
     /**
@@ -67,6 +69,16 @@ public class MainActivity extends AppCompatActivity {
      * @param view
      */
     public void stopLive(View view) {
+        pusher.stopLive();
+    }
+
+    /**
+     * 释放工作
+     */
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        pusher.release();
     }
 
     // WebRTC 直接视频预览

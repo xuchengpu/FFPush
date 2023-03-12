@@ -48,7 +48,7 @@ public class CameraHelper implements SurfaceHolder.Callback, Camera.PreviewCallb
     /**
      * 停止预览
      */
-    private void stopPreview() {
+    public void stopPreview() {
         if (mCamera != null) {
             // 预览数据回调接口
             mCamera.setPreviewCallback(null);
