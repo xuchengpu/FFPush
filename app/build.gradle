@@ -3,6 +3,11 @@ plugins {
 }
 
 android {
+    //加载资源
+    Properties properties = new Properties()
+    InputStream inputStream = project.rootProject.file('local.properties').newDataInputStream() ;
+    properties.load( inputStream )
+
     compileSdk 32
 
     defaultConfig {
@@ -22,6 +27,8 @@ android {
                 abiFilters  "arm64-v8a","armeabi-v7a"
             }
         }
+        //用自己搭建的推流地址
+        buildConfigField ("String", "FFPUSH_URL", properties.getProperty("FFPUSH_URL", "\"******\""))
     }
 
     buildTypes {

@@ -61,7 +61,7 @@ public class MainActivity extends AppCompatActivity {
      * @param view
      */
     public void startLive(View view) {
-        pusher.startLive("rtmp://139.224.136.101/myapp");
+        pusher.startLive(BuildConfig.FFPUSH_URL);
     }
 
     /**

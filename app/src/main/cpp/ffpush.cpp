@@ -37,8 +37,8 @@ uint32_t start_time; // 记录时间搓，为了计算下，时间搓
 void releasePackets(RTMPPacket **packet) {
     if (packet) {
         RTMPPacket_Free(*packet);
-        delete packet;
-        packet = nullptr;
+        delete *packet;
+        *packet = nullptr;
     }
 }
 
@@ -182,7 +182,7 @@ Java_com_xcp_ffpush_FFPusher_native_1start(JNIEnv *env, jobject thiz, jstring pa
 
     // 深拷贝
     // 以前我们在做player播放器的时候，是用Flag来控制（isPlaying）
-    char *url = new char(strlen(path) + 1); // C++的堆区开辟 new -- delete
+    char *url = new char[strlen(path) + 1]; // C++的堆区开辟 new -- delete
     strcpy(url, path);
 
     // 创建线程来进行直播
