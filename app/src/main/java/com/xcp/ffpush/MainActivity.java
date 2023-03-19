@@ -36,6 +36,7 @@ public class MainActivity extends AppCompatActivity {
         rxPermissions = new RxPermissions(this);
         rxPermissions
                 .request(Manifest.permission.CAMERA,
+                        Manifest.permission.RECORD_AUDIO,
                         Manifest.permission.WRITE_EXTERNAL_STORAGE,
                         Manifest.permission.WRITE_EXTERNAL_STORAGE)
                 .subscribe(granted -> {

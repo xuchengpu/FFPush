@@ -11,12 +11,13 @@ public class FFPusher {
     }
 
     private VideoChannel videoChannel;
-    // private AudioChannel audioChannel;
+    private AudioChannel audioChannel;
 
     // 此中转站的构造，主要是的三件事，①:初始化native层需要的加载， ②:实例化视频通道并传递基本参数(宽高,fps,码率等)， ③:实例化视频通道
     public FFPusher(Activity activity, int cameraId, int width, int height, int fps, int bitrate) {
         native_init();
         videoChannel = new VideoChannel(this, activity, cameraId, width, height, fps, bitrate);
+        audioChannel = new AudioChannel(this);
     }
 
     // 视频通道-->SurfaceView与中转站里面的Camera绑定
@@ -31,12 +32,13 @@ public class FFPusher {
 
     /**
      * 开始直播
+     *
      * @param path rtmp地址
      */
     public void startLive(String path) {
         native_start(path);
         videoChannel.startLive();
-        // audioChannel.startLive(); // 下节课都这样写
+        audioChannel.startLive();
     }
 
     /**
@@ -44,7 +46,7 @@ public class FFPusher {
      */
     public void stopLive() {
         videoChannel.stopLive();
-        // audioChannel.stopLive(); // 下节课都这样写
+        audioChannel.stopLive();
         native_stop();
     }
 
@@ -53,8 +55,13 @@ public class FFPusher {
      */
     public void release() {
         videoChannel.release();
-        // audioChannel.release(); // 下节课都这样写
+        audioChannel.release();
         native_release();
+    }
+
+    // 音频通道需要样本数（faac的编码器，输出样本 的样本数，才是标准）
+    public int getInputSamples() {
+        return native_getInputSamples(); // native层-->从faacEncOpen中获取到的样本数
     }
 
     // 写很多的native函数 >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -67,4 +74,9 @@ public class FFPusher {
     // 下面是视频独有
     public native void native_initVideoEncoder(int width, int height, int mFps, int bitrate); // 初始化x264编码器
     public native void native_pushVideo(byte[] data); // 相机画面的数据 byte[] 推给 C++层
+
+    // 下面是音频独有
+    public native void native_initAudioEncoder(int sampleRate, int numChannels);
+    public native int native_getInputSamples();
+    public native void native_pushAudio(byte[] datas);
 }

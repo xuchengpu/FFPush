@@ -5,6 +5,7 @@
 #include "VideoChannel.h"
 #include "util.h"
 #include "safe_queue.h"
+#include "AudioChannel.h"
 
 using namespace std;
 extern "C"
@@ -26,6 +27,7 @@ Java_com_xcp_ffpush_MainActivity_stringFromJni(JNIEnv *env, jobject thiz) {
 }
 
 VideoChannel * videoChannel = nullptr;
+AudioChannel * audioChannel = nullptr;
 bool isStart;
 pthread_t pid_start;
 bool readyPushing;
@@ -60,9 +62,12 @@ JNIEXPORT void JNICALL
 Java_com_xcp_ffpush_FFPusher_native_1init(JNIEnv *env, jobject thiz) {
     // C++层的初始化工作而已
     videoChannel = new VideoChannel();
+    audioChannel=new AudioChannel();
 
     // 存入队列的 关联
     videoChannel->setVideoCallback(callback);
+
+    audioChannel->setAudioCallback(callback);
 
     // 队列的释放工作 关联
     packets.setReleaseCallback(releasePackets);
@@ -229,4 +234,33 @@ extern "C"
 JNIEXPORT void JNICALL
 Java_com_xcp_ffpush_FFPusher_native_1release(JNIEnv *env, jobject thiz) {
 
+}
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_xcp_ffpush_FFPusher_native_1initAudioEncoder(JNIEnv *env, jobject thiz, jint sample_rate,
+                                                      jint num_channels) {
+    if (audioChannel) {
+        audioChannel->initAudioEncoder(sample_rate, num_channels);
+    }
+
+}
+extern "C"
+JNIEXPORT jint JNICALL
+Java_com_xcp_ffpush_FFPusher_native_1getInputSamples(JNIEnv *env, jobject thiz) {
+    if (audioChannel) {
+        return audioChannel->getInputSamples();
+    }
+    return 0;
+
+}
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_xcp_ffpush_FFPusher_native_1pushAudio(JNIEnv *env, jobject thiz, jbyteArray datas) {
+
+    if (!audioChannel || !readyPushing) {
+        return;
+    }
+    jbyte *data = env->GetByteArrayElements(datas, nullptr); // 此data数据就是AudioRecord采集到的原始数据
+    audioChannel->encodeData(data); // 核心函数：对音频数据 【进行faac的编码工作】
+    env->ReleaseByteArrayElements(datas, data, 0); // 释放byte[]
 }
